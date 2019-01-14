@@ -14,9 +14,9 @@ imgFolderA = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\A';
 imgFolderP = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\P';
 imgFolderT = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\T';
 
-imgSetsA = myImageSet(imgFolderA,'recursive');
-imgSetsP = myImageSet(imgFolderP,'recursive');
-imgSetsT = myImageSet(imgFolderT,'recursive');
+imgSetsA = imageSet(imgFolderA,'recursive');
+imgSetsP = imageSet(imgFolderP,'recursive');
+imgSetsT = imageSet(imgFolderT,'recursive');
 
 {imgSetsA.Description}; % Display names of the scanned folders
 {imgSetsP.Description}; % Display names of the scanned folders
@@ -52,9 +52,13 @@ while (count <= NO_OF_LOOPS)
 % from each set for the training data and the remainder, (100-x)%, for the 
 % validation data. Randomize the split to avoid biasing the results.
 
-[trainingSetsA, validationSetsA] = partition(imgSetsA, 0.5, 'randomize');
-[trainingSetsP, validationSetsP] = partition(imgSetsP, 0.5, 'randomize');
-[trainingSetsT, validationSetsT] = partition(imgSetsT, 0.5, 'randomize');
+% [trainingSetsA, validationSetsA] = partition(imgSetsA, 0.5, 'randomize');
+% [trainingSetsP, validationSetsP] = partition(imgSetsP, 0.5, 'randomize');
+% [trainingSetsT, validationSetsT] = partition(imgSetsT, 0.5, 'randomize');
+
+trainingSetsA = imgSetsA;
+trainingSetsP = imgSetsP;
+trainingSetsT = imgSetsT;
 
 %% Create a Visual Vocabulary and Train an Image Category Classifier
 % Bag of words is a technique adapted to computer vision from the
