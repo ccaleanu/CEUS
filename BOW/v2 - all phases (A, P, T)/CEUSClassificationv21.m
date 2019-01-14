@@ -1,40 +1,47 @@
-%% New on v2:
+%% New
+% on v21
+% exclude one Patient
+% on v2:
 % loop evaluation
 
+%% Init
 clear all
 close all
 clc
+
 %%  Create an array of image sets from multiple folders
-imgFolderA = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\A'
-imgFolderP = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\P'
-imgFolderT = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\T'
+imgFolderA = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\A';
+imgFolderP = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\P';
+imgFolderT = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\T';
 
-imgSetsA = myImageSet(imgFolderA,'recursive')
-imgSetsP = myImageSet(imgFolderP,'recursive')
-imgSetsT = myImageSet(imgFolderT,'recursive')
+imgSetsA = myImageSet(imgFolderA,'recursive');
+imgSetsP = myImageSet(imgFolderP,'recursive');
+imgSetsT = myImageSet(imgFolderT,'recursive');
 
-{imgSetsA.Description} % Display names of the scanned folders
-{imgSetsP.Description} % Display names of the scanned folders
-{imgSetsT.Description} % Display names of the scanned folders
+{imgSetsA.Description}; % Display names of the scanned folders
+{imgSetsP.Description}; % Display names of the scanned folders
+{imgSetsT.Description}; % Display names of the scanned folders
+
 %% Prepare Training and Validation Image Sets
 % Since |imgSets| above contains an unequal number of images per category,
 % let's first adjust it, so that the number of images in the training set is balanced.
 
-imgSetsA = excludePatient(imgSetsA, 2, 11)
-% imgSetsP = myImageSet(imgFolderP,'recursive')
-% imgSetsT = myImageSet(imgFolderT,'recursive')
+imgSetsA = excludePatient(imgSetsA, 2, 7);
+imgSetsP = excludePatient(imgSetsP, 2, 7);
+imgSetsT = excludePatient(imgSetsT, 2, 7);
 
-minSetCountA = min([imgSetsA.Count]); % determine the smallest amount of images in a category
-minSetCountP = min([imgSetsP.Count]); % determine the smallest amount of images in a category
-minSetCountT = min([imgSetsT.Count]); % determine the smallest amount of images in a category
+%minSetCountA = min([imgSetsA.Count]); % determine the smallest amount of images in a category
+%minSetCountP = min([imgSetsP.Count]); % determine the smallest amount of images in a category
+%minSetCountT = min([imgSetsT.Count]); % determine the smallest amount of images in a category
 
+%% Loop
 count = 1;
 NO_OF_LOOPS = 1
 while (count <= NO_OF_LOOPS)
 % Use partition method to trim the set.
-imgSetsA = partition(imgSetsA, minSetCountA, 'randomize');
-imgSetsP = partition(imgSetsP, minSetCountP, 'randomize');
-imgSetsT = partition(imgSetsT, minSetCountT, 'randomize');
+%imgSetsA = partition(imgSetsA, minSetCountA, 'randomize');
+%imgSetsP = partition(imgSetsP, minSetCountP, 'randomize');
+%imgSetsT = partition(imgSetsT, minSetCountT, 'randomize');
 
 % Notice that each set now has exactly the same number of images.
 [imgSetsA.Count]
