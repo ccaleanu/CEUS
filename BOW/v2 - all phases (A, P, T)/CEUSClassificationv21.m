@@ -12,9 +12,9 @@ clc
 %%  Create an array of image sets from multiple folders
 % get the dataset from:
 % https://uptro29158-my.sharepoint.com/:f:/g/personal/intelligentembeddedvision_upt_ro/EgEsDIYU6XRMvqpt0wTzE9oBB5RUC9xR77XnbwoFtAhv2w?e=6SHDJ9
-imgFolderA = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\A';
-imgFolderP = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\P';
-imgFolderT = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\T';
+imgFolderA = '\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\A';
+imgFolderP = '\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\P';
+imgFolderT = '\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\T';
 
 imgSetsA = imageSet(imgFolderA,'recursive');
 imgSetsP = imageSet(imgFolderP,'recursive');
@@ -28,8 +28,8 @@ imgSetsT = imageSet(imgFolderT,'recursive');
 % Since |imgSets| above contains an unequal number of images per category,
 % let's first adjust it, so that the number of images in the training set is balanced.
 
-lesionType = 2;
-patient = 7;
+lesionType = 1;
+patient = 10;
 
 [imgSetsA, testA] = excludePatient(imgSetsA, lesionType, patient);
 [imgSetsP, testP] = excludePatient(imgSetsP, lesionType, patient);
