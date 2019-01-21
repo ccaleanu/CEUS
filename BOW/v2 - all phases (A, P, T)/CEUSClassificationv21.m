@@ -10,6 +10,8 @@ close all
 clc
 
 %%  Create an array of image sets from multiple folders
+% get the dataset from:
+% https://uptro29158-my.sharepoint.com/:f:/g/personal/intelligentembeddedvision_upt_ro/EgEsDIYU6XRMvqpt0wTzE9oBB5RUC9xR77XnbwoFtAhv2w?e=6SHDJ9
 imgFolderA = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\A';
 imgFolderP = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\P';
 imgFolderT = 'c:\MY\My Databases\CEUS\UMF\Picture DBV3 - A P T\T';
@@ -26,9 +28,12 @@ imgSetsT = imageSet(imgFolderT,'recursive');
 % Since |imgSets| above contains an unequal number of images per category,
 % let's first adjust it, so that the number of images in the training set is balanced.
 
-imgSetsA = excludePatient(imgSetsA, 2, 7);
-imgSetsP = excludePatient(imgSetsP, 2, 7);
-imgSetsT = excludePatient(imgSetsT, 2, 7);
+lesionType = 2;
+patient = 7;
+
+[imgSetsA, testA] = excludePatient(imgSetsA, lesionType, patient);
+[imgSetsP, testP] = excludePatient(imgSetsP, lesionType, patient);
+[imgSetsT, testT] = excludePatient(imgSetsT, lesionType, patient);
 
 %minSetCountA = min([imgSetsA.Count]); % determine the smallest amount of images in a category
 %minSetCountP = min([imgSetsP.Count]); % determine the smallest amount of images in a category
@@ -56,9 +61,15 @@ while (count <= NO_OF_LOOPS)
 % [trainingSetsP, validationSetsP] = partition(imgSetsP, 0.5, 'randomize');
 % [trainingSetsT, validationSetsT] = partition(imgSetsT, 0.5, 'randomize');
 
+%%
+% Separate the sets into training and test data.
 trainingSetsA = imgSetsA;
 trainingSetsP = imgSetsP;
 trainingSetsT = imgSetsT;
+
+testSetsA = imageSet(testA);
+testSetsP = imageSet(testP);
+testSetsT = imageSet(testT);
 
 %% Create a Visual Vocabulary and Train an Image Category Classifier
 % Bag of words is a technique adapted to computer vision from the
@@ -114,11 +125,24 @@ disp('Evaluating the training set done!')
 % confusion matrix, which is a good initial indicator of how well the
 % classifier is performing.
 
-disp('Evaluating the validation set ...')
-[confMatrixvA,knownLabelIdxvA,predictedLabelIdxvA,scorevA]  = evaluate(categoryClassifierA, validationSetsA);
-[confMatrixvP,knownLabelIdxvP,predictedLabelIdxvP,scorevP]  = evaluate(categoryClassifierP, validationSetsP);
-[confMatrixvT,knownLabelIdxvT,predictedLabelIdxvT,scorevT]  = evaluate(categoryClassifierT, validationSetsT);
-disp('Evaluating the validation set done!')
+% disp('Evaluating the validation set ...')
+% [confMatrixvA,knownLabelIdxvA,predictedLabelIdxvA,scorevA]  = evaluate(categoryClassifierA, validationSetsA);
+% [confMatrixvP,knownLabelIdxvP,predictedLabelIdxvP,scorevP]  = evaluate(categoryClassifierP, validationSetsP);
+% [confMatrixvT,knownLabelIdxvT,predictedLabelIdxvT,scorevT]  = evaluate(categoryClassifierT, validationSetsT);
+% disp('Evaluating the validation set done!')
+
+%% predict
+[labelIdx, score] = predict(categoryClassifierA,imread(testSetsA.ImageLocation{1, 5}));
+% Display the classification label.
+categoryClassifierA.Labels(labelIdx)
+
+[labelIdx, score] = predict(categoryClassifierP,imread(testSetsP.ImageLocation{1, 3}));
+% Display the classification label.
+categoryClassifierP.Labels(labelIdx)
+
+[labelIdx, score] = predict(categoryClassifierP,imread(testSetsT.ImageLocation{1, 1}));
+% Display the classification label.
+categoryClassifierT.Labels(labelIdx)
 
 %% Compute average accuracy
 resultA(count) = mean(diag(confMatrixvA))

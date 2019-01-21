@@ -1,4 +1,4 @@
-function ySet =  excludePatient(xSet, lesion, patientIdx)
+function [ySet, testImgs] =  excludePatient(xSet, lesion, patientIdx)
 % exclude one Patient
 
 s = inputname(1);
@@ -28,9 +28,13 @@ if strcmp(s, 'imgSetsT') && (length(logical_cells) < 2)
     disp (stringToFind)
 end
 
+%% get
+testImgs = xSet(1, lesion).ImageLocation(:, logical_cells(1):logical_cells(end));
+
 %% delete
 xSet(1, lesion).ImageLocation(:, logical_cells(1):logical_cells(end)) = [];
 
 %% return
+
 disp('done')
 ySet = xSet;
