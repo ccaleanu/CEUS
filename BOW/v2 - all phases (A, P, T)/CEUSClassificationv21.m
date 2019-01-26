@@ -1,6 +1,6 @@
 %% New
-% on v21
-% exclude one Patient
+% on v30
+% exclude one Patient and evaluate
 % on v2:
 % loop evaluation
 
@@ -32,27 +32,24 @@ imgSetsT = imageSet(imgFolderT,'recursive');
 %patientsPerLesion = [17, 33, 23, 11, 11];
 patientsPerLesion = [2, 2, 2, 2, 2];
 right = 0;
+
+%% Loop
 for lesionType = 1:5
     for patient = 1:patientsPerLesion(lesionType)
         disp([num2str(lesionType),' ',num2str(patient)])
-    end
-end
 
+startCase = tic;
 % lesionType = 2;
 % patient = 7;
 
-[imgSetsA, testA] = excludePatient(imgSetsA, lesionType, patient);
-[imgSetsP, testP] = excludePatient(imgSetsP, lesionType, patient);
-[imgSetsT, testT] = excludePatient(imgSetsT, lesionType, patient);
+[imgSetsA, testA] = excludePatient(imgSetsA, lesionType, patient,'a');
+[imgSetsP, testP] = excludePatient(imgSetsP, lesionType, patient, 'p');
+[imgSetsT, testT] = excludePatient(imgSetsT, lesionType, patient, 't');
 
 minSetCountA = min([imgSetsA.Count]); % determine the smallest amount of images in a category
 minSetCountP = min([imgSetsP.Count]); % determine the smallest amount of images in a category
 minSetCountT = min([imgSetsT.Count]); % determine the smallest amount of images in a category
 
-%% Loop
-count = 1;
-NO_OF_LOOPS = 1
-while (count <= NO_OF_LOOPS)
 % Use partition method to trim the set.
 %imgSetsA = partition(imgSetsA, minSetCountA, 'randomize');
 %imgSetsP = partition(imgSetsP, minSetCountP, 'randomize');
@@ -178,17 +175,21 @@ categoryClassifierT.Labels(labelIdxT)
 targetIdxT = repmat(lesionType,1, length(labelIdxT));
 accuracyT(lesionType, patient) = sum(labelIdxT == targetIdxT')/numel(labelIdxT');
 
-diagnostic = [labelIdxA; labelIdxP; labelIdxT]
+diagnostic(lesionType, patient) = [labelIdxA; labelIdxP; labelIdxT]
 %scores = [max(scoreA,[],2);max(scoreP,[],2);max(scoreT,[],2)]
-[tmp,~,idx] = unique(diagnostic')
+[tmp,~,idx] = unique(diagnostic(lesionType, patient)')
 if tmp(mode(idx))==lesionType
     right = right + 1
 end
 accuracy = right*100/sum(patientsPerLesion)
 %% Compute elapsed time
+endCase = toc(startCase);
+disp(['Time per case: ', num2str(endCase/60), ' mins'])
+
+    end
+end
 endTime = toc(startTime);
 disp(['Time elapsed: ', num2str(endTime/60), ' mins'])
-
 % accuracy = sum(YPred == YTest)/numel(YTest) 
 % [tmp,~,idx] = unique(categoryClassifierA.Labels(labelIdxA)) 
 % y3 = {'Poor','Good','Good','Goood'}; 

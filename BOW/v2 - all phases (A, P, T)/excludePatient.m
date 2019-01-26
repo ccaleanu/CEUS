@@ -1,4 +1,4 @@
-function [ySet, testImgs] =  excludePatient(xSet, lesion, patientIdx)
+function [ySet, testImgs] =  excludePatient(xSet, lesion, patientIdx, letter)
 % exclude one Patient
 
 s = inputname(1);
@@ -13,7 +13,7 @@ if patientIdx > noOfPatients(lesion)
 end
 
 %% find
-stringToFind = strcat(lesions(lesion),num2str(patientIdx));
+stringToFind = strcat(lesions(lesion),num2str(patientIdx),letter);
 logical_cells = find(contains(xSet(1,lesion).ImageLocation,stringToFind));
 if strcmp(s, 'imgSetsA') && (length(logical_cells) < 5)
     disp('Less than 5 deleted!')
