@@ -8,6 +8,7 @@
 clear all
 close all
 clc
+startTime = tic;
 
 %%  Create an array of image sets from multiple folders
 % get the dataset from:
@@ -28,16 +29,25 @@ imgSetsT = imageSet(imgFolderT,'recursive');
 % Since |imgSets| above contains an unequal number of images per category,
 % let's first adjust it, so that the number of images in the training set is balanced.
 
-lesionType = 1;
-patient = 10;
+%patientsPerLesion = [17, 33, 23, 11, 11];
+patientsPerLesion = [2, 2, 2, 2, 2];
+right = 0;
+for lesionType = 1:5
+    for patient = 1:patientsPerLesion(lesionType)
+        disp([num2str(lesionType),' ',num2str(patient)])
+    end
+end
+
+% lesionType = 2;
+% patient = 7;
 
 [imgSetsA, testA] = excludePatient(imgSetsA, lesionType, patient);
 [imgSetsP, testP] = excludePatient(imgSetsP, lesionType, patient);
 [imgSetsT, testT] = excludePatient(imgSetsT, lesionType, patient);
 
-%minSetCountA = min([imgSetsA.Count]); % determine the smallest amount of images in a category
-%minSetCountP = min([imgSetsP.Count]); % determine the smallest amount of images in a category
-%minSetCountT = min([imgSetsT.Count]); % determine the smallest amount of images in a category
+minSetCountA = min([imgSetsA.Count]); % determine the smallest amount of images in a category
+minSetCountP = min([imgSetsP.Count]); % determine the smallest amount of images in a category
+minSetCountT = min([imgSetsT.Count]); % determine the smallest amount of images in a category
 
 %% Loop
 count = 1;
@@ -47,11 +57,13 @@ while (count <= NO_OF_LOOPS)
 %imgSetsA = partition(imgSetsA, minSetCountA, 'randomize');
 %imgSetsP = partition(imgSetsP, minSetCountP, 'randomize');
 %imgSetsT = partition(imgSetsT, minSetCountT, 'randomize');
-
+imgSetsAPartition = partition(imgSetsA, minSetCountA, 'randomize');
+imgSetsPPartition = partition(imgSetsP, minSetCountP, 'randomize');
+imgSetsTPartition = partition(imgSetsT, minSetCountT, 'randomize');
 % Notice that each set now has exactly the same number of images.
-[imgSetsA.Count]
-[imgSetsP.Count]
-[imgSetsT.Count]
+[imgSetsAPartition.Count]
+[imgSetsPPartition.Count]
+[imgSetsTPartition.Count]
 %%
 % Separate the sets into training and validation data. Pick x% of images
 % from each set for the training data and the remainder, (100-x)%, for the 
@@ -63,9 +75,9 @@ while (count <= NO_OF_LOOPS)
 
 %%
 % Separate the sets into training and test data.
-trainingSetsA = imgSetsA;
-trainingSetsP = imgSetsP;
-trainingSetsT = imgSetsT;
+trainingSetsA = imgSetsAPartition;
+trainingSetsP = imgSetsPPartition;
+trainingSetsT = imgSetsTPartition;
 
 testSetsA = imageSet(testA);
 testSetsP = imageSet(testP);
@@ -131,25 +143,54 @@ disp('Evaluating the training set done!')
 % [confMatrixvT,knownLabelIdxvT,predictedLabelIdxvT,scorevT]  = evaluate(categoryClassifierT, validationSetsT);
 % disp('Evaluating the validation set done!')
 
-%% predict
-[labelIdx, score] = predict(categoryClassifierA,imread(testSetsA.ImageLocation{1, 5}));
-% Display the classification label.
-categoryClassifierA.Labels(labelIdx)
-
-[labelIdx, score] = predict(categoryClassifierP,imread(testSetsP.ImageLocation{1, 3}));
-% Display the classification label.
-categoryClassifierP.Labels(labelIdx)
-
-[labelIdx, score] = predict(categoryClassifierP,imread(testSetsT.ImageLocation{1, 1}));
-% Display the classification label.
-categoryClassifierT.Labels(labelIdx)
-
 %% Compute average accuracy
-resultA(count) = mean(diag(confMatrixvA))
-resultP(count) = mean(diag(confMatrixvP))
-resultT(count) = mean(diag(confMatrixvT))
+% resultA(count) = mean(diag(confMatrixvA))
+% resultP(count) = mean(diag(confMatrixvP))
+% resultT(count) = mean(diag(confMatrixvT))
 
-count = count +1;
+%% predict
+% For all images of the same phase
+% Convert imageSet to Datastore
+imds = imageDatastore(testSetsA.ImageLocation);
+[labelIdxA, scoreA] = predict(categoryClassifierA,imds)
+% For a particular image
+%[labelIdx, score] = predict(categoryClassifierA,imread(testSetsA.ImageLocation{1, 5}));
+% Display the classification label.
+categoryClassifierA.Labels(labelIdxA)
+targetIdxA = repmat(lesionType,1, length(labelIdxA));
+accuracyA(lesionType, patient) = sum(labelIdxA == targetIdxA')/numel(labelIdxA');
 
-displayEndOfDemoMessage(mfilename)
+imds = imageDatastore(testSetsP.ImageLocation);
+[labelIdxP, scoreP] = predict(categoryClassifierP,imds)
+% For a particular image
+%[labelIdx, score] = predict(categoryClassifierA,imread(testSetsA.ImageLocation{1, 5}));
+% Display the classification label.
+categoryClassifierP.Labels(labelIdxP)
+targetIdxP = repmat(lesionType,1, length(labelIdxP));
+accuracyP(lesionType, patient) = sum(labelIdxP == targetIdxP')/numel(labelIdxP');
+
+imds = imageDatastore(testSetsT.ImageLocation);
+[labelIdxT, scoreT] = predict(categoryClassifierT,imds)
+% For a particular image
+%[labelIdx, score] = predict(categoryClassifierA,imread(testSetsA.ImageLocation{1, 5}));
+% Display the classification label.
+categoryClassifierT.Labels(labelIdxT)
+targetIdxT = repmat(lesionType,1, length(labelIdxT));
+accuracyT(lesionType, patient) = sum(labelIdxT == targetIdxT')/numel(labelIdxT');
+
+diagnostic = [labelIdxA; labelIdxP; labelIdxT]
+%scores = [max(scoreA,[],2);max(scoreP,[],2);max(scoreT,[],2)]
+[tmp,~,idx] = unique(diagnostic')
+if tmp(mode(idx))==lesionType
+    right = right + 1
 end
+accuracy = right*100/sum(patientsPerLesion)
+%% Compute elapsed time
+endTime = toc(startTime);
+disp(['Time elapsed: ', num2str(endTime/60), ' mins'])
+
+% accuracy = sum(YPred == YTest)/numel(YTest) 
+% [tmp,~,idx] = unique(categoryClassifierA.Labels(labelIdxA)) 
+% y3 = {'Poor','Good','Good','Goood'}; 
+% [tmp,~,idx] = unique(y3); 
+% tmp{mode(idx)}
